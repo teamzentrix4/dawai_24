@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCustomerSession } from "@/lib/auth";
+import { publicProductFilter } from "@/lib/productWizard";
 
 export async function POST(request){
   const auth=await getCustomerSession();
@@ -8,7 +9,7 @@ export async function POST(request){
   const body=await request.json();
   const {address,payment,lines,coupon}=body;
   if(!address?.phone||!address?.address||!lines?.length)return NextResponse.json({error:"Invalid order details"},{status:400});
-  const products=await db.product.findMany({where:{id:{in:lines.map(line=>line.product?.id).filter(Boolean)},active:true}});
+  const products=await db.product.findMany({where:{...publicProductFilter,id:{in:lines.map(line=>line.product?.id).filter(Boolean)}}});
   const byId=new Map(products.map(product=>[product.id,product]));
   const validLines=lines.map(line=>({product:byId.get(line.product?.id),quantity:Math.max(1,Number(line.qty)||1)})).filter(line=>line.product);
   if(!validLines.length)return NextResponse.json({error:"No available products in this order"},{status:400});

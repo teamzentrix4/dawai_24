@@ -1,11 +1,13 @@
 import { db } from "@/lib/db";
+import { publicProductFilter } from "@/lib/productWizard";
 
 export function mapProduct(p) {
+  const { sourceUrl, categorySourceUrl, ...publicProduct } = p;
   return {
-    ...p,
+    ...publicProduct,
     mrp: Number(p.mrp),
     price: Number(p.price),
-    discount: Number(p.mrp) > 0 ? Math.round((1 - Number(p.price) / Number(p.mrp)) * 100) : 0,
+    discount: p.discount != null ? Number(p.discount) : Number(p.mrp) > 0 ? Math.round((1 - Number(p.price) / Number(p.mrp)) * 100) : 0,
     prescription: p.prescriptionRequired,
     brand: p.brand?.name || "",
     category: p.category?.slug || "",
@@ -19,10 +21,10 @@ export function mapProduct(p) {
 
 const include = { brand: true, category: true, subcategory: true, images: { orderBy: { sortOrder: "asc" } } };
 export async function getActiveProducts(where = {}) {
-  const rows = await db.product.findMany({ where: { active: true, ...where }, include, orderBy: { createdAt: "desc" } });
+  const rows = await db.product.findMany({ where: { AND: [publicProductFilter, where] }, include, orderBy: { createdAt: "desc" } });
   return rows.map(mapProduct);
 }
 export async function getActiveProduct(slug) {
-  const row = await db.product.findFirst({ where: { slug, active: true }, include });
+  const row = await db.product.findFirst({ where: { ...publicProductFilter, slug }, include });
   return row ? mapProduct(row) : null;
 }

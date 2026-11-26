@@ -17,7 +17,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const [categories, banners, cms] = await Promise.all([
-    db.category.findMany({ where: { active: true }, include: { subcategories: { where: { active: true }, orderBy: { sortOrder: "asc" } } }, orderBy: { sortOrder: "asc" } }),
+    db.category.findMany({ where: publicCategoryFilter, include: { subcategories: { where: publicCategoryFilter, orderBy: { sortOrder: "asc" } } }, orderBy: { sortOrder: "asc" } }),
     db.banner.findMany({ where: { active: true, placement: "HOME_PROMO" }, orderBy: { sortOrder: "asc" } }),
     db.cmsEntry.findMany({ where: { active: true, type: { in: ["HOME_HERO","QUICK_ACTION","WHY_FEATURE","ADVANTAGE","TESTIMONIAL","NEWS","KNOW_MORE","FAQ"] } }, orderBy: { sortOrder: "asc" } }),
   ]);

@@ -154,28 +154,39 @@ model Brand {
 
 model Product {
   id                   String         @id @default(cuid())
-  sku                  String         @unique
+  sku                  String?        @unique
   slug                 String         @unique
   name                 String
+  manufacturer         String?
+  shortDescription     String?        @map("short_description")
   description          String?
   pack                 String?
+  packSize             String?        @map("pack_size")
+  unit                 String?
+  countryOfOrigin      String?        @map("country_of_origin")
   imageUrl             String?
   brandId              String?
   brand                Brand?         @relation(fields: [brandId], references: [id])
-  categoryId           String
-  category             Category       @relation(fields: [categoryId], references: [id])
+  categoryId           String?
+  category             Category?      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  categoryStatus       String?        @map("category_status")
   subcategoryId        String?
   subcategory          Subcategory?   @relation(fields: [subcategoryId], references: [id])
-  mrp                  Decimal        @db.Decimal(10, 2)
-  price                Decimal        @db.Decimal(10, 2)
+  mrp                  Decimal?       @db.Decimal(10, 2)
+  price                Decimal?       @db.Decimal(10, 2)
+  discount             Decimal?       @db.Decimal(5, 2)
+  stockStatus          String?        @map("stock_status")
   stock                Int            @default(0)
   prescriptionRequired Boolean        @default(false)
   active               Boolean        @default(false)
   seoTitle             String?
   seoDescription       String?
+  metaKeywords         String?        @map("meta_keywords")
+  sourceUrl            String?        @map("source_url")
+  categorySourceUrl    String?        @map("category_source_url")
   images               ProductImage[]
   orderItems           OrderItem[]
-  createdAt            DateTime       @default(now())
+  createdAt            DateTime?      @default(now())
   updatedAt            DateTime       @updatedAt
 }
 

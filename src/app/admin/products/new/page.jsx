@@ -1,3 +1,11 @@
-import Link from "next/link";import {db} from "@/lib/db";import PageHeader from "@/components/Admin/PageHeader";import ProductForm from "@/components/Admin/ProductForm";import {createProduct} from "../../actions";
-export const dynamic="force-dynamic";
-export default async function NewProduct(){const categories=await db.category.findMany({where:{active:true},include:{subcategories:{where:{active:true},orderBy:{name:"asc"}}},orderBy:{name:"asc"}});return <section><PageHeader title="Add product" parent="Products" description="Complete the details below. You can save it as a draft or publish immediately."/>{categories.length?<ProductForm categories={categories} action={createProduct}/>:<div className="rounded-2xl border border-dashed bg-white p-14 text-center"><h2 className="font-extrabold">Create a category first</h2><p className="mt-2 text-sm text-slate-500">Every product needs a category before it can be added.</p><Link href="/admin/categories" className="mt-5 inline-block rounded-xl bg-[#7b2cbf] px-5 py-3 text-sm font-bold text-white">Go to categories</Link></div>}</section>}
+import { db } from "@/lib/db";
+import ProductForm from "@/components/Admin/ProductForm";
+import ProductImportLink from "@/components/Admin/ProductImportLink";
+import { saveProduct } from "../../actions";
+
+export const dynamic = "force-dynamic";
+
+export default async function NewProduct() {
+  const categories = await db.category.findMany({ include: { subcategories: { orderBy: { name: "asc" } } }, orderBy: { name: "asc" } });
+  return <ProductForm categories={categories} action={saveProduct} headerAction={<ProductImportLink />} />;
+}
