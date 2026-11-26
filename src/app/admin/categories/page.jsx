@@ -7,7 +7,6 @@ import CategoryRowActions from "@/components/Admin/CategoryRowActions";
 import { db } from "@/lib/db";
 import CategoryControls from "@/components/Admin/CategoryControls";
 import { DeleteButton } from "@/components/Admin/FormControls";
-// import { deleteCategory } from "../actions";
 import {
     deleteCategory,
     toggleCategoryStatus,
@@ -126,10 +125,11 @@ export default async function Categories({ searchParams }) {
                                                 <input
                                                     type="hidden"
                                                     name="active"
-                                                    value={String(c.active)}
+                                                    value={String(!c.active)}
                                                 />
                                                 <button
                                                     type="submit"
+                                                    aria-label={(c.active ? "Hide " : "Show ") + c.name}
                                                     className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${c.active
                                                         ? "bg-emerald-50 text-emerald-700"
                                                         : "bg-red-50 text-red-600"

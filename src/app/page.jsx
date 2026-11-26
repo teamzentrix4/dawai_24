@@ -8,6 +8,7 @@ import HomeTestimonials from "@/components/Home/HomeTestimonials";
 import HomeNews from "@/components/Home/HomeNews";
 import HomeKnowMore from "@/components/Home/HomeKnowMore";
 import { db } from "@/lib/db";
+import { publicCategoryFilter } from "@/lib/productWizard";
 
 export const metadata = {
   title: "Buy Generic Medicines Online & Save Up to 60% on PlatinumRx",

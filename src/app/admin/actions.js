@@ -108,6 +108,22 @@ export async function updateCategory(formData) {
   refresh("/admin/categories", "/categories", "/");
 }
 
+export async function toggleCategoryStatus(formData) {
+  const id = formData.get("id");
+  const active = formData.get("active");
+  if (typeof id !== "string" || !id.trim() || (active !== "true" && active !== "false")) return;
+  if (!await getAdminSession()) return;
+
+  const { count } = await db.category.updateMany({ where: { id }, data: { active: active === "true" } });
+  if (!count) return;
+
+  for (const route of ["/admin/categories", "/", "/categories", "/api/catalog/categories"]) {
+    revalidatePath(route);
+  }
+  revalidatePath("/category/[slug]", "page");
+  revalidatePath("/category/[slug]/[subslug]", "page");
+}
+
 export async function createSubcategory(formData) {
   const name = formData.get("name")?.toString().trim();
   const categoryId = formData.get("categoryId")?.toString();

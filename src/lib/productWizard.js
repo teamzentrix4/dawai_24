@@ -45,12 +45,11 @@ export function validProductUrl(value, allowLocal = false) {
   }
 }
 
-export function validateProduct(values, categories, { publishing = false, importing = false, existingSlug = "" } = {}) {
+export function validateProduct(values, categories, { publishing = false, existingSlug = "" } = {}) {
   const errors = {};
   if (!values.product_name.trim()) errors.product_name = "Enter a product name.";
-  if ((publishing || importing) && !values.sku.trim()) errors.sku = "Enter a SKU.";
-  if ((importing || values.slug.trim()) && values.slug !== existingSlug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(values.slug.trim())) errors.slug = "Use lowercase letters, numbers and single hyphens.";
-  if (importing && !values.slug.trim()) errors.slug = "Enter a URL slug.";
+  if (publishing && !values.sku.trim()) errors.sku = "Enter a SKU.";
+  if (values.slug.trim() && values.slug !== existingSlug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(values.slug.trim())) errors.slug = "Use lowercase letters, numbers and single hyphens.";
   if (values.brand.trim() && !slugifyProduct(values.brand)) errors.brand = "Enter a brand with at least one letter or number.";
   const category = categories.find(item => item.id === values.category);
   const subcategory = category?.subcategories.find(item => item.id === values.subcategory);
@@ -60,7 +59,7 @@ export function validateProduct(values, categories, { publishing = false, import
   else if (publishing && subcategory && (!subcategory.active || isPendingCategory(subcategory))) errors.subcategory = "Select an active subcategory or leave this blank.";
 
   for (const field of ["mrp", "selling_price"]) {
-    if (!values[field].trim() && !publishing && !(importing && field === "selling_price")) continue;
+    if (!values[field].trim() && !publishing) continue;
     if (!/^\d+(?:\.\d{1,2})?$/.test(values[field].trim()) || Number(values[field]) > 99999999.99) {
       errors[field] = "Enter a non-negative price with up to two decimal places.";
     }

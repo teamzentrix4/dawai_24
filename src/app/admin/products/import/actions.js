@@ -8,9 +8,13 @@ import { importProductWorkbook } from "@/lib/productImportServer";
 export async function importProducts(formData) {
   if (!await getAdminSession()) return { message: "Sign in as an admin to import products." };
   const result = await importProductWorkbook(db, formData.get("workbook"), formData.get("intent") === "import");
-  if (result.imported) {
+  if (result.completed && (result.imported || result.updated)) {
     revalidatePath("/admin");
     revalidatePath("/admin/products");
+    if (result.updated) {
+      revalidatePath("/admin/products/[id]/edit", "page");
+      revalidatePath("/products/[slug]", "page");
+    }
   }
   return result;
 }
