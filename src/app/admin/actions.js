@@ -300,6 +300,32 @@ export async function saveProduct(formData) {
     return { message: "Could not save the product. Your changes are still here. Please try again." };
   }
 }
+export async function publishAllProducts() {
+  if (!await getAdminSession()) return { error: "Sign in as an admin to publish products." };
+
+  const result = await db.$transaction(async tx => {
+    const categoryFields = { name: true, slug: true, active: true };
+    const drafts = await tx.product.findMany({
+      where: { active: false },
+      select: {
+        id: true, sku: true, mrp: true, price: true,
+        category: { select: categoryFields }, subcategory: { select: categoryFields },
+      },
+    });
+    const ids = drafts.filter(canPublishProduct).map(product => product.id);
+    if (!ids.length) return { published: 0, skipped: drafts.length };
+
+    const { count } = await tx.product.updateMany({ where: { id: { in: ids }, active: false }, data: { active: true } });
+    return { published: count, skipped: drafts.length - count };
+  }, { isolationLevel: "RepeatableRead" });
+
+  if (result.published) {
+    for (const route of ["/admin", "/admin/products", "/", "/medicines", "/api/catalog/products"]) revalidatePath(route);
+    for (const route of ["/products/[slug]", "/category/[slug]", "/category/[slug]/[subslug]"]) revalidatePath(route, "page");
+  }
+  return result;
+}
+
 export async function toggleProduct(formData) {
   if (!await getAdminSession()) return;
   const id = String(formData.get("id") ?? "");
