@@ -19,7 +19,7 @@ import { useStore } from "@/lib/store";
 import { useLocation } from "@/lib/locationContext";
 
 const SearchBox = dynamic(() => import("@/components/Search/SearchBox"), { ssr: false });
-const PinModal = dynamic(() => import("./PinModal"), { ssr: false });
+const LocationModal = dynamic(() => import("./LocationModal"), { ssr: false });
 
 export default function Header({ initialCategories = [] }) {
   const router = useRouter();
@@ -341,6 +341,7 @@ export default function Header({ initialCategories = [] }) {
           </aside>
         </div>
       )}
+      <LocationModal />
     </>
   );
 }

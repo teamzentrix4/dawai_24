@@ -11,14 +11,22 @@ export async function customerLogin(formData) {
   if (!login || !password) fail("/login", "Incorrect email/mobile or password.");
 
   if (login.includes("@")) {
-    const admin = await db.adminUser.findUnique({where: {email: login}});
+    // Both tables can be queried at the same time. Previously the customer
+    // lookup waited for the admin lookup to finish, adding a full DB round trip.
+    const [admin, customer] = await Promise.all([
+      db.adminUser.findUnique({ where: { email: login }, select: { id: true, passwordHash: true } }),
+      db.customer.findUnique({ where: { email: login }, select: { id: true, passwordHash: true } }),
+    ]);
     if (admin && verifyPassword(password, admin.passwordHash)) {
       await createSession(admin.id, "ADMIN");
       redirect("/admin");
     }
+    if (!customer || !verifyPassword(password, customer.passwordHash)) fail("/login", "Incorrect email/mobile or password.");
+    await createSession(customer.id, "CUSTOMER");
+    redirect(next?.startsWith("/") && !next.startsWith("//") ? next : "/account");
   }
 
-  const customer = await db.customer.findFirst({where: {OR: [{email: login}, {phone: login.replace(/\D/g, "")}]}});
+  const customer = await db.customer.findUnique({ where: { phone: login.replace(/\D/g, "") }, select: { id: true, passwordHash: true } });
   if (!customer || !verifyPassword(password, customer.passwordHash)) fail("/login", "Incorrect email/mobile or password.");
   await createSession(customer.id, "CUSTOMER");
   redirect(next?.startsWith("/") && !next.startsWith("//") ? next : "/account");

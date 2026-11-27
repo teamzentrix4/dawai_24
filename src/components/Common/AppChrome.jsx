@@ -18,18 +18,5 @@ const LocationModal = dynamic(() => import("@/components/Header/LocationModal"),
 export default function AppChrome({ children, categories = [] }) {
   const pathname = usePathname();
   if (pathname.startsWith("/admin")) return children;
-  return (
-    <LocationProvider>
-      <StoreProvider>
-        <SubmissionGuard />
-        <Header initialCategories={categories} />
-        <main className="min-h-[60vh]">{children}</main>
-        <Footer />
-        <CartDrawer />
-        <Toasts />
-        <BackToTop />
-        <LocationModal />
-      </StoreProvider>
-    </LocationProvider>
-  );
+  return <StoreProvider><LocationProvider><SubmissionGuard /><Header initialCategories={categories} /><main className="min-h-[60vh]">{children}</main><Footer /><CartDrawer /><Toasts /><BackToTop /></LocationProvider></StoreProvider>;
 }
