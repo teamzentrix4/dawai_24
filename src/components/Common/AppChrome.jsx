@@ -17,5 +17,5 @@ const BackToTop = dynamic(() => import("@/components/Common/BackToTop"), { ssr: 
 export default function AppChrome({ children, categories = [] }) {
   const pathname = usePathname();
   if (pathname.startsWith("/admin")) return children;
-  return <StoreProvider><SubmissionGuard /><Header initialCategories={categories} /><main className="min-h-[60vh]">{children}</main><Footer /><CartDrawer /><Toasts /><BackToTop /></StoreProvider>;
+  return <StoreProvider><LocationProvider><SubmissionGuard /><Header initialCategories={categories} /><main className="min-h-[60vh]">{children}</main><Footer /><CartDrawer /><Toasts /><BackToTop /></LocationProvider></StoreProvider>;
 }
