@@ -13,7 +13,7 @@ export default function SearchBox({ className = "" }) {
   const ref = useRef(null);
 
   useEffect(() => {
-    fetch("/api/catalog/categories").then(r=>r.json()).then(setCategories).catch(()=>setCategories([]));
+    fetch("/api/catalog/categories", { cache: "force-cache" }).then(r=>r.json()).then(setCategories).catch(()=>setCategories([]));
     const off = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", off);
     return () => document.removeEventListener("mousedown", off);

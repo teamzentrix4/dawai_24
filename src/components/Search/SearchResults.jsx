@@ -10,7 +10,7 @@ export default function SearchResults() {
   const q = (useSearchParams().get("q") || "").trim();
   const { catalog } = useStore();
   const [categories,setCategories] = useState([]);
-  useEffect(()=>{fetch("/api/catalog/categories").then(r=>r.json()).then(setCategories).catch(()=>setCategories([]))},[]);
+  useEffect(()=>{fetch("/api/catalog/categories", { cache: "force-cache" }).then(r=>r.json()).then(setCategories).catch(()=>setCategories([]))},[]);
 
   if (!q) {
     return (
