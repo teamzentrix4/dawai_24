@@ -37,7 +37,7 @@ export default async function HomePage() {
       {/* 4. Why Choose Substitute (Perception card + Same Composition + Certified Mfg + 60% Savings) */}
       <HomeWhySubstitute features={content("WHY_FEATURE")} />
 
-      {/* 5. Shop by Category (Interactive tabs + subcategories grid) */}
+      {/* 5. Shop by Category (category cards link to subcategory pages) */}
       <HomeShopByCategory categories={categories} />
 
       {/* 6. The PlatinumRx Advantage (100% Genuine, FDA & GMP Approved, GMP Certified) */}

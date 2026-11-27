@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { publicCategoryFilter } from "@/lib/productWizard";
+import { getPublicCategories } from "@/lib/publicCategories";
+
+export const revalidate = 300;
 
 export async function GET() {
-  const data = await db.category.findMany({ where: publicCategoryFilter, include: { subcategories: { where: publicCategoryFilter, orderBy: { sortOrder: "asc" } } }, orderBy: { sortOrder: "asc" } });
-  return NextResponse.json(data);
+  const response = NextResponse.json(await getPublicCategories());
+  response.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=86400");
+  return response;
 }

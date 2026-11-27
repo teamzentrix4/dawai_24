@@ -3,7 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { destroySession, getAdminSession } from "@/lib/auth";
 import { canPublishProduct, productData, productSteps, suggestedProductSlug, validateProduct } from "@/lib/productWizard";
@@ -11,6 +11,7 @@ import { reserveProductIds } from "@/lib/productIdentity";
 
 const slugify = (v) => v.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const refresh = (...paths) => paths.forEach(revalidatePath);
+const refreshCategoryNavigation = () => revalidateTag("public-category-navigation");
 
 async function saveLocalImage(file, folder) {
   if (!file || typeof file === "string" || file.size === 0) {
@@ -77,6 +78,7 @@ export async function createCategory(formData) {
   });
 
   refresh("/admin/categories", "/categories", "/");
+  refreshCategoryNavigation();
 }
 
 export async function updateCategory(formData) {
@@ -106,6 +108,7 @@ export async function updateCategory(formData) {
   });
 
   refresh("/admin/categories", "/categories", "/");
+  refreshCategoryNavigation();
 }
 
 export async function toggleCategoryStatus(formData) {
@@ -122,6 +125,7 @@ export async function toggleCategoryStatus(formData) {
   }
   revalidatePath("/category/[slug]", "page");
   revalidatePath("/category/[slug]/[subslug]", "page");
+  refreshCategoryNavigation();
 }
 
 export async function createSubcategory(formData) {
@@ -151,6 +155,7 @@ export async function createSubcategory(formData) {
   });
 
   refresh("/admin/categories", "/categories", "/");
+  refreshCategoryNavigation();
 }
 
 export async function updateSubcategory(formData) {
@@ -179,6 +184,7 @@ export async function updateSubcategory(formData) {
   });
 
   refresh("/admin/categories", "/categories", "/");
+  refreshCategoryNavigation();
 }
 
 export async function deleteSubcategory(formData) {
@@ -197,6 +203,7 @@ export async function deleteSubcategory(formData) {
   ]);
 
   refresh("/admin/categories", "/categories", "/");
+  refreshCategoryNavigation();
 }
 
 export async function deleteCategory(formData) {
@@ -226,6 +233,7 @@ export async function deleteCategory(formData) {
   }
 
   refresh("/admin/categories", "/categories", "/");
+  refreshCategoryNavigation();
 }
 export async function saveProduct(formData) {
   if (!await getAdminSession()) return { message: "Your admin session expired. Sign in again to save." };

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { BarChart3, Bell, Boxes, Check, ChevronDown, Clock3, FileText, LayoutDashboard, LogOut, Menu, Megaphone, Package, PackageCheck, ReceiptText, Search, Settings, ShoppingBag, TriangleAlert, UserRound, Users, X } from "lucide-react";
 import { logoutAdmin } from "@/app/admin/actions";
+import SubmissionGuard from "@/components/Common/SubmissionGuard";
 
 const nav = [["Dashboard", "/admin", LayoutDashboard], ["Products", "/admin/products", Package], ["Categories", "/admin/categories", Boxes], ["Orders", "/admin/orders", ReceiptText], ["Prescriptions", "/admin/prescriptions", PackageCheck], ["Customers", "/admin/customers", Users], ["Support", "/admin/support", Bell], ["Banners & Content", "/admin/content", FileText], ["Marketing", "/admin/marketing", Megaphone], ["Reports", "/admin/reports", BarChart3], ["Settings", "/admin/settings", Settings]];
 const eventIcons = { order: ShoppingBag, prescription: PackageCheck, customer: UserRound, contact: Bell, stock: TriangleAlert };
@@ -17,6 +18,7 @@ export default function AdminShell({ children, notifications = [], admin = {} })
   const markAll = () => { const next = notifications.map(x => x.id); setRead(next); localStorage.setItem("dawai24-admin-read-notifications", JSON.stringify(next)) };
   const unread = notifications.filter(x => !read.includes(x.id)).length; const initials = (admin.name || "Admin").split(" ").map(x => x[0]).join("").slice(0, 2).toUpperCase();
   return <div className="min-h-screen bg-[#f7f7fb] text-slate-900">
+    <SubmissionGuard />
     {mobileOpen && <button aria-label="Close menu" onClick={() => setMobileOpen(false)} className="fixed inset-0 z-40 bg-black/30 lg:hidden" />}
     <aside className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform lg:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
       <div className="flex h-18 items-center justify-between border-b border-slate-100 px-5"><Link href="/" title="Open Dawai24 website" className="group flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-[#7b2cbf] font-black text-white transition group-hover:scale-105">D</span><div><p className="font-extrabold">Dawai<span className="text-[#ff6652]">24</span></p><p className="text-[9px] font-bold tracking-[.2em] text-slate-400"></p></div></Link><button onClick={() => setMobileOpen(false)} className="lg:hidden"><X size={20} /></button></div>

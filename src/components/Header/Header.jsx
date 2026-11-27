@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
@@ -14,30 +15,35 @@ import {
   LogOut
 } from "lucide-react";
 import Logo from "@/components/Common/Logo";
-import SearchBox from "@/components/Search/SearchBox";
 import { useStore } from "@/lib/store";
-import { useLocation } from "@/lib/locationContext";
 
-export default function Header() {
+const SearchBox = dynamic(() => import("@/components/Search/SearchBox"), { ssr: false });
+const PinModal = dynamic(() => import("./PinModal"), { ssr: false });
+
+export default function Header({ initialCategories = [] }) {
   const router = useRouter();
   const { count, user, openDrawer, logout } = useStore();
   const { location, openLocationModal } = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [mobileExpandedTab, setMobileExpandedTab] = useState(null);
-  const [dynamicCategories, setDynamicCategories] = useState([]);
+  const [dynamicCategories, setDynamicCategories] = useState(initialCategories);
   const [auth, setAuth] = useState({ admin: null, customer: null, loaded: false });
   const timeoutRef = useRef(null);
 
   // Close dropdown when scrolling
   useEffect(() => {
-    fetch("/api/catalog/categories").then((r) => r.json()).then(setDynamicCategories).catch(() => setDynamicCategories([]));
+    // The layout supplies this data on first render. Only fall back to the API
+    // if the cached server data was unavailable.
+    if (!initialCategories.length) {
+      fetch("/api/catalog/categories", { cache: "force-cache" }).then((r) => r.json()).then(setDynamicCategories).catch(() => setDynamicCategories([]));
+    }
     const handleScroll = () => {
       setActiveDropdown(null);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [initialCategories.length]);
   useEffect(() => { fetch("/api/auth/session").then(r=>r.json()).then(data=>setAuth({...data,loaded:true})).catch(()=>setAuth({admin:null,customer:null,loaded:true})); }, []);
   const signOut = async (type) => { await fetch("/api/auth/logout", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({type}) }); if(type==="customer") logout(); setAuth((x)=>({...x,[type]:null})); router.refresh(); };
   const navEntries = dynamicCategories.map((category) => [category.name, { slug: category.slug, items: category.subcategories || [] }]);
