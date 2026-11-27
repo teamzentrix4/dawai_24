@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Logo from "@/components/Common/Logo";
 import { useStore } from "@/lib/store";
+import { useLocation } from "@/lib/locationContext";
 
 const SearchBox = dynamic(() => import("@/components/Search/SearchBox"), { ssr: false });
 const PinModal = dynamic(() => import("./PinModal"), { ssr: false });

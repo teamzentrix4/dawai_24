@@ -13,9 +13,23 @@ import SubmissionGuard from "@/components/Common/SubmissionGuard";
 const CartDrawer = dynamic(() => import("@/components/Cart/CartDrawer"), { ssr: false });
 const Toasts = dynamic(() => import("@/components/Common/Toasts"), { ssr: false });
 const BackToTop = dynamic(() => import("@/components/Common/BackToTop"), { ssr: false });
+const LocationModal = dynamic(() => import("@/components/Header/LocationModal"), { ssr: false });
 
 export default function AppChrome({ children, categories = [] }) {
   const pathname = usePathname();
   if (pathname.startsWith("/admin")) return children;
-  return <StoreProvider><SubmissionGuard /><Header initialCategories={categories} /><main className="min-h-[60vh]">{children}</main><Footer /><CartDrawer /><Toasts /><BackToTop /></StoreProvider>;
+  return (
+    <LocationProvider>
+      <StoreProvider>
+        <SubmissionGuard />
+        <Header initialCategories={categories} />
+        <main className="min-h-[60vh]">{children}</main>
+        <Footer />
+        <CartDrawer />
+        <Toasts />
+        <BackToTop />
+        <LocationModal />
+      </StoreProvider>
+    </LocationProvider>
+  );
 }
