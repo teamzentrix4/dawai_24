@@ -4,8 +4,15 @@ import { totals } from "@/lib/catalog";
 
 const Ctx = createContext(null);
 const KEY = "dawai24-store-v1";
+const PENDING_CART_KEY = "dawai24-pending-cart";
 
 const initial = { cart: [], wishlist: [], pin: "", user: null, addresses: [], orders: [], coupon: "" };
+const addCartLine = (cart, id, qty) => {
+  const existing = cart.find((item) => item.id === id);
+  return existing
+    ? cart.map((item) => item.id === id ? { ...item, qty: Math.min(10, item.qty + qty) } : item)
+    : [...cart, { id, qty }];
+};
 
 export function StoreProvider({ children }) {
   const [state, setState] = useState(initial);
@@ -15,11 +22,12 @@ export function StoreProvider({ children }) {
   const [catalog, setCatalog] = useState([]);
   const [couponRules, setCouponRules] = useState({});
   const [storeSettings, setStoreSettings] = useState({});
+  const [authGateOpen, setAuthGateOpen] = useState(false);
 
   useEffect(() => {
     let saved = initial;
     try { const raw = localStorage.getItem(KEY); if (raw) saved = { ...initial, ...JSON.parse(raw),addresses:[],orders:[] }; } catch {}
-    fetch("/api/auth/session").then((r)=>r.ok?r.json():{}).then(async(auth)=>{const customer=auth.customer||null;const addresses=customer?await fetch("/api/customer/addresses").then(r=>r.ok?r.json():[]):[];setState({...saved,user:customer,addresses})}).catch(()=>setState({...saved,user:null,addresses:[]})).finally(()=>setReady(true));
+    fetch("/api/auth/session").then((r)=>r.ok?r.json():{}).then(async(auth)=>{const customer=auth.customer||null;const addresses=customer?await fetch("/api/customer/addresses").then(r=>r.ok?r.json():[]):[];let cart=saved.cart;try{const pending=customer?JSON.parse(localStorage.getItem(PENDING_CART_KEY)||"null"):null;if(pending?.id){cart=addCartLine(cart,pending.id,Math.max(1,Number(pending.qty)||1));localStorage.removeItem(PENDING_CART_KEY)}}catch{}setState({...saved,cart,user:customer,addresses})}).catch(()=>setState({...saved,user:null,addresses:[]})).finally(()=>setReady(true));
   }, []);
 
   useEffect(() => {
@@ -43,11 +51,18 @@ export function StoreProvider({ children }) {
 
   const api = useMemo(() => ({
     addToCart(id, qty = 1) {
-      patch((s) => {
-        const ex = s.cart.find((c) => c.id === id);
-        return { cart: ex ? s.cart.map((c) => (c.id === id ? { ...c, qty: Math.min(10, c.qty + qty) } : c)) : [...s.cart, { id, qty }] };
-      });
+      patch((s) => ({ cart: addCartLine(s.cart, id, qty) }));
       toast("Added to cart");
+    },
+    requestAddToCart(id, qty = 1) {
+      if (state.user) {
+        patch((s) => ({ cart: addCartLine(s.cart, id, qty) }));
+        toast("Added to cart");
+        return true;
+      }
+      try { localStorage.setItem(PENDING_CART_KEY, JSON.stringify({ id, qty })); } catch {}
+      setAuthGateOpen(true);
+      return false;
     },
     setQty: (id, qty) => patch((s) => ({ cart: qty <= 0 ? s.cart.filter((c) => c.id !== id) : s.cart.map((c) => (c.id === id ? { ...c, qty: Math.min(10, qty) } : c)) })),
     removeFromCart(id) { patch((s) => ({ cart: s.cart.filter((c) => c.id !== id) })); toast("Removed from cart", "info"); },
@@ -64,8 +79,9 @@ export function StoreProvider({ children }) {
     placeOrder(order) { patch((s) => ({ orders: [order, ...s.orders], cart: [], coupon: "" })); },
     openDrawer: () => setDrawer(true),
     closeDrawer: () => setDrawer(false),
+    closeAuthGate: () => setAuthGateOpen(false),
     toast,
-  }), [toast]);
+  }), [state.user, toast]);
 
   const lines = useMemo(
     () => state.cart.map((c) => ({ ...c, product: catalog.find((p) => p.id === c.id) })).filter((l) => l.product),
@@ -75,7 +91,7 @@ export function StoreProvider({ children }) {
   const count = lines.reduce((s, l) => s + l.qty, 0);
 
   return (
-    <Ctx.Provider value={{ ...state, ready, catalog, couponRules, storeSettings, lines, sums, count, drawer, toasts, ...api }}>
+    <Ctx.Provider value={{ ...state, ready, catalog, couponRules, storeSettings, lines, sums, count, drawer, toasts, authGateOpen, ...api }}>
       {children}
     </Ctx.Provider>
   );

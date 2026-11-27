@@ -1,160 +1,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { LoaderCircle, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Heart, LogOut, MapPin, Package, ShieldCheck, Wallet, ChevronRight } from "lucide-react";
-import Breadcrumbs from "@/components/Common/Breadcrumbs";
 import { useStore } from "@/lib/store";
 
 export default function Account() {
   const router = useRouter();
-  const { user, ready, login, logout, addresses, wishlist, toast } = useStore();
-  const [f, setF] = useState({ name: "", email: "", phone: "" });
-  const [err, setErr] = useState({});
+  const { user, ready, login, toast } = useStore();
+  const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => { 
-    if (ready && !user) router.replace("/login"); 
-  }, [ready, user, router]);
+  useEffect(() => { if (ready && !user) router.replace("/login?next=/account"); }, [ready, user, router]);
+  useEffect(() => { if (user) setForm({ name: user.name || "", email: user.email || "", phone: user.phone || "" }); }, [user]);
+  if (!ready || !user) return null;
 
-  useEffect(() => { 
-    if (user) setF({ name: user.name || "", email: user.email || "", phone: user.phone || "" }); 
-  }, [user]);
-
-  if (!ready || !user) return <div className="container-x py-16 text-gray-400 text-center">Loading account...</div>;
-
-  const save = async (e) => {
-    e.preventDefault();
-    const v = {};
-    if (f.name.trim().length < 2) v.name = "Enter your full name";
-    if (f.email && !/^\S+@\S+\.\S+$/.test(f.email)) v.email = "Enter a valid email address";
-    setErr(v);
-    if (Object.keys(v).length) return;
-    const response = await fetch("/api/auth/profile", { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name:f.name,email:f.email}) });
-    const data = await response.json();
-    if (!response.ok) return toast(data.error || "Profile could not be updated", "error");
-    login(data); toast("Profile details updated successfully", "success");
+  const save = async (event) => {
+    event.preventDefault();
+    const nextErrors = {};
+    if (form.name.trim().length < 2) nextErrors.name = "Enter your full name";
+    if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) nextErrors.email = "Enter a valid email address";
+    setErrors(nextErrors); if (Object.keys(nextErrors).length) return;
+    setSaving(true);
+    try { const response = await fetch("/api/auth/profile", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: form.name, email: form.email }) }); const data = await response.json(); if (!response.ok) return toast(data.error || "Profile could not be updated", "error"); login(data); toast("Your details were saved", "success"); } finally { setSaving(false); }
   };
+  const change = (key, value) => { setForm((current) => ({ ...current, [key]: value })); setErrors((current) => ({ ...current, [key]: "" })); };
 
-  const tiles = [
-    { icon: Package, title: "Orders & Prescriptions", sub: "View your live order history", href: "/orders" },
-    { icon: Heart, title: "Wishlist", sub: `${wishlist.length} item(s) saved`, href: "/wishlist" },
-    { icon: MapPin, title: "Saved Delivery Addresses", sub: `${addresses.length} address(es)`, href: "/account/addresses" },
-  ];
-
-  return (
-    <>
-      <Breadcrumbs items={[{ label: "My Account" }]} />
-      <div className="container-x max-w-4xl pb-16 space-y-8">
-        
-        {/* User Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#ECEEF2] shadow-xs flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-[#FFF1EF] text-[#FF6B5A] font-black text-2xl flex items-center justify-center">
-              {user.name.charAt(0)}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-black text-[#171725]">{user.name}</h1>
-                <span className="bg-emerald-50 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">
-                  Verified
-                </span>
-              </div>
-              <p className="text-[13px] text-[#696974] mt-0.5">+91 {user.phone}</p>
-            </div>
-          </div>
-
-          <button
-            onClick={async () => {
-              await fetch("/api/auth/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "customer" }) });
-              logout();
-              router.push("/");
-              router.refresh();
-            }}
-            className="btn btn-outline py-2 px-5 text-[13px] flex items-center gap-1.5"
-          >
-            <LogOut size={16} /> Logout
-          </button>
-        </div>
-
-        {/* Dashboard quick tiles */}
-        <div className="grid sm:grid-cols-3 gap-4">
-          {tiles.map((t) => {
-            const Icon = t.icon;
-            return (
-              <Link
-                key={t.href}
-                href={t.href}
-                className="group bg-white rounded-3xl p-5 border border-[#ECEEF2] hover:border-[#FF6B5A]/40 transition-all hover:shadow-xs flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-[#FFF1EF] text-[#FF6B5A] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <Icon size={22} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-[14px] text-[#171725]">{t.title}</h3>
-                    <p className="text-[12px] text-[#92929D] mt-0.5">{t.sub}</p>
-                  </div>
-                </div>
-                <ChevronRight size={18} className="text-gray-400 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Edit profile form */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#ECEEF2] shadow-xs space-y-5">
-          <h2 className="font-extrabold text-[17px] text-[#171725] border-b border-[#F0F2F5] pb-3">
-            Profile Settings
-          </h2>
-
-          <form onSubmit={save} className="grid sm:grid-cols-2 gap-4" noValidate>
-            <div>
-              <label className="text-[12px] font-bold text-[#171725] block mb-1">Full Name</label>
-              <input
-                className={`input ${err.name ? "error" : ""}`}
-                value={f.name}
-                onChange={(e) => {
-                  setF({ ...f, name: e.target.value });
-                  setErr({ ...err, name: "" });
-                }}
-              />
-              {err.name && <p className="field-error">{err.name}</p>}
-            </div>
-
-            <div>
-              <label className="text-[12px] font-bold text-[#171725] block mb-1">Email Address</label>
-              <input
-                type="email"
-                className={`input ${err.email ? "error" : ""}`}
-                value={f.email}
-                onChange={(e) => {
-                  setF({ ...f, email: e.target.value });
-                  setErr({ ...err, email: "" });
-                }}
-              />
-              {err.email && <p className="field-error">{err.email}</p>}
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="text-[12px] font-bold text-[#171725] block mb-1">Primary Mobile Number</label>
-              <input
-                disabled
-                className="input bg-[#FAFBFD] text-gray-500 cursor-not-allowed"
-                value={`+91 ${f.phone}`}
-              />
-              <p className="text-[11px] text-[#92929D] mt-1">Verified with SMS OTP</p>
-            </div>
-
-            <div className="sm:col-span-2 pt-2">
-              <button type="submit" className="btn btn-primary py-2.5 px-6 text-[14px]">
-                Save Changes
-              </button>
-            </div>
-          </form>
-        </div>
-
-      </div>
-    </>
-  );
+  return <section className="max-w-[760px]">
+    <div className="mb-8"><p className="text-xs font-bold uppercase tracking-[.15em] text-[#FF6B5A]">Account details</p><h2 className="mt-2 text-3xl font-black tracking-tight">Fill Details</h2><p className="mt-2 text-sm text-slate-500">Keep your profile details current for deliveries and orders.</p></div>
+    <form onSubmit={save} noValidate className="space-y-5">
+      <Field label="Name" error={errors.name}><input value={form.name} onChange={(event) => change("name", event.target.value)} className={`input h-12 ${errors.name ? "error" : ""}`} placeholder="Your full name" /></Field>
+      <Field label="Email ID" error={errors.email}><input type="email" value={form.email} onChange={(event) => change("email", event.target.value)} className={`input h-12 ${errors.email ? "error" : ""}`} placeholder="name@example.com" /></Field>
+      <Field label="Primary mobile number"><input disabled value={`+91 ${form.phone}`} className="input h-12 cursor-not-allowed bg-slate-50 text-slate-500" /><span className="mt-1.5 flex items-center gap-1 text-xs font-medium text-emerald-700"><ShieldCheck size={14}/> Verified mobile number</span></Field>
+      <div className="pt-2"><button type="submit" disabled={saving} className="btn btn-primary rounded-lg px-6 py-3 disabled:cursor-wait disabled:opacity-70">{saving ? <><LoaderCircle size={16} className="animate-spin"/>Saving details...</> : "Save Details"}</button></div>
+    </form>
+  </section>;
 }
+
+function Field({ label, error, children }) { return <label className="block text-sm font-bold text-[#171725]"><span className="mb-2 block">{label}</span>{children}{error && <p className="field-error">{error}</p>}</label>; }

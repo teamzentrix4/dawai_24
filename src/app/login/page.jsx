@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import AuthShell from "@/components/Forms/AuthShell";
 import { customerLogin } from "@/app/auth-actions";
@@ -9,6 +9,9 @@ import { LockKeyhole, ShieldCheck, Eye, EyeOff } from "lucide-react";
 
 export default function Login({ searchParams }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [next, setNext] = useState("");
+  const [error, setError] = useState("");
+  useEffect(() => { const params = new URLSearchParams(window.location.search); setNext(params.get("next") || ""); setError(params.get("error") || ""); }, []);
 
   return (
     <AuthShell
@@ -16,19 +19,23 @@ export default function Login({ searchParams }) {
       subtitle="Customers and administrators can securely login from this page."
     >
       <form action={customerLogin} className="space-y-4">
+        {next && <input type="hidden" name="next" value={next} />}
+
+        {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-semibold text-red-700">{error}</div>}
 
         <div className="rounded-xl bg-slate-50 px-3 py-2 text-center text-[11px] text-slate-500">
           <ShieldCheck size={13} className="mr-1 inline text-emerald-600" />
           One secure login for customers and administrators
         </div>
 
-        <Field label="Email or mobile number">
+        <Field label="Email address">
           <input
             name="login"
+            type="email"
             required
-            autoComplete="username"
+            autoComplete="email"
             className="input"
-            placeholder="Email address or 10-digit mobile"
+            placeholder="name@example.com"
           />
         </Field>
 

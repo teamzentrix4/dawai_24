@@ -16,9 +16,9 @@ export default function AuthShell({ title, subtitle, children }) {
 
         <div className="pt-2">{children}</div>
 
-        <p className="text-[11px] text-center text-[#92929D] border-t border-[#F0F2F5] pt-4">
+        {/* <p className="text-[11px] text-center text-[#92929D] border-t border-[#F0F2F5] pt-4">
           By proceeding, you agree to Davai24&apos;s Terms of Service and Privacy Policy.
-        </p>
+        </p> */}
       </div>
     </div>
   );

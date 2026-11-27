@@ -6,7 +6,7 @@ import { money } from "@/lib/catalog";
 import ProductImage from "@/components/Common/ProductImage";
 
 export default function ProductCard({ product: p }) {
-  const { addToCart, cart, toast } = useStore();
+  const { requestAddToCart, cart } = useStore();
   const inCart = (cart || []).some((item) => (item.id === p.id || item.productId === p.id));
 
   return (
@@ -69,8 +69,7 @@ export default function ProductCard({ product: p }) {
       {/* Bottom Section: Add to Cart button matching reference */}
       <button
         onClick={() => {
-          addToCart(p.id);
-          toast("Added to cart", "success");
+          requestAddToCart(p.id);
         }}
         className={`w-full h-10 rounded-xl text-[13px] font-semibold transition-all flex items-center justify-center cursor-pointer border ${
           inCart

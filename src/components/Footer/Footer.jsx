@@ -108,8 +108,8 @@ export default function Footer() {
               We help families save up to 70% on monthly prescription bills with 100% same salt composition.
             </p>
             <div className="pt-2 text-[12px] text-[#92929D] space-y-1">
-              <p><strong className="text-[#171725]">Address:</strong> Building H-208, Hustle Hub Tech Park, 27th Main Rd, HSR Layout Sector 2, Bengaluru 560102</p>
-              <p><strong className="text-[#171725]">Support:</strong> care@davai24.in | +91 96069 73757</p>
+              <p><strong className="text-[#171725]">Address:</strong>A-11, Amity Rd, A Block, C Block, Sector 125, Noida, Uttar Pradesh 201313</p>
+              <p><strong className="text-[#171725]">Support:</strong>8958622622</p>
             </div>
           </div>
 

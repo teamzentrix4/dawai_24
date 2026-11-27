@@ -7,7 +7,7 @@ import { useStore } from "@/lib/store";
 
 export default function RelatedMedicationCard({ saltName, saltSlug }) {
   const router = useRouter();
-  const { addToCart, toast } = useStore();
+  const { requestAddToCart, toast } = useStore();
   const [requested, setRequested] = useState(false);
   const [addedBrand, setAddedBrand] = useState(false);
   const [addedSub, setAddedSub] = useState(false);
@@ -63,15 +63,15 @@ export default function RelatedMedicationCard({ saltName, saltSlug }) {
 
   const handleAddBrand = (e) => {
     e.stopPropagation();
+    if (!requestAddToCart(brandSlug, 1)) return;
     setAddedBrand(true);
-    if (addToCart) addToCart(brandSlug, 1);
     setTimeout(() => setAddedBrand(false), 2000);
   };
 
   const handleAddSub = (e) => {
     e.stopPropagation();
+    if (!requestAddToCart(subSlug, 1)) return;
     setAddedSub(true);
-    if (addToCart) addToCart(subSlug, 1);
     setTimeout(() => setAddedSub(false), 2000);
   };
 

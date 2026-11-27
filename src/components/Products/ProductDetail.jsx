@@ -22,7 +22,7 @@ const tabs = ["Salt & Composition", "Description & Uses", "Dosage & Side Effects
 
 export default function ProductDetail({ product: p }) {
   const router = useRouter();
-  const { addToCart, wishlist, toggleWish, toast, pin, setPin } = useStore();
+  const { requestAddToCart, wishlist, toggleWish, toast, pin, setPin } = useStore();
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState(0);
   const [pinIn, setPinIn] = useState(pin || "560102");
@@ -36,8 +36,7 @@ export default function ProductDetail({ product: p }) {
   };
 
   const handleBuyNow = () => {
-    addToCart(p.id, qty);
-    router.push("/checkout");
+    if (requestAddToCart(p.id, qty)) router.push("/checkout");
   };
 
   return (
@@ -126,8 +125,7 @@ export default function ProductDetail({ product: p }) {
             <div className="grid grid-cols-2 gap-3 pt-1">
               <button
                 onClick={() => {
-                  addToCart(p.id, qty);
-                  toast("Added to cart", "success");
+                  requestAddToCart(p.id, qty);
                 }}
                 className="btn btn-outline w-full py-3 text-[14px]"
               >

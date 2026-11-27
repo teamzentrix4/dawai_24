@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import AuthShell from "@/components/Forms/AuthShell";
 import { customerSignup } from "@/app/auth-actions";
@@ -10,6 +10,8 @@ import { UserPlus, Eye, EyeOff } from "lucide-react";
 export default function Signup({ searchParams }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [next, setNext] = useState("");
+  useEffect(() => setNext(new URLSearchParams(window.location.search).get("next") || ""), []);
 
   return (
     <AuthShell
@@ -17,6 +19,7 @@ export default function Signup({ searchParams }) {
       subtitle="Register once to manage orders, prescriptions, addresses and wishlist."
     >
       <form action={customerSignup} className="space-y-4">
+        {next && <input type="hidden" name="next" value={next} />}
 
         <Field label="Full name">
           <input
