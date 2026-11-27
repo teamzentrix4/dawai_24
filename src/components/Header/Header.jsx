@@ -7,7 +7,7 @@ import {
   ChevronDown, 
   Menu, 
   X, 
-  Navigation,
+  MapPin,
   Wallet,
   ShoppingCart,
   LayoutDashboard,
@@ -15,13 +15,13 @@ import {
 } from "lucide-react";
 import Logo from "@/components/Common/Logo";
 import SearchBox from "@/components/Search/SearchBox";
-import PinModal from "./PinModal";
 import { useStore } from "@/lib/store";
+import { useLocation } from "@/lib/locationContext";
 
 export default function Header() {
   const router = useRouter();
-  const { count, pin, user, openDrawer, logout } = useStore();
-  const [pinOpen, setPinOpen] = useState(false);
+  const { count, user, openDrawer, logout } = useStore();
+  const { location, openLocationModal } = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [mobileExpandedTab, setMobileExpandedTab] = useState(null);
@@ -53,6 +53,11 @@ export default function Header() {
     }, 120);
   };
 
+  // Location display string
+  const displayLocationText = location?.area 
+    ? (location.pincode ? `${location.area}, ${location.pincode}` : `${location.area}, ${location.city}`)
+    : (location?.city ? (location.pincode ? `${location.city}, ${location.pincode}` : location.city) : "Select Location");
+
   return (
     <>
       <header className="sticky top-0 z-50 bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.06)] border-b border-[#F0F2F5]">
@@ -63,7 +68,7 @@ export default function Header() {
           <div className="flex items-center gap-3 md:gap-5 shrink-0">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-1.5 text-gray-700 hover:text-gray-900 rounded-lg hover:bg-gray-100"
+              className="md:hidden p-1.5 text-gray-700 hover:text-gray-900 rounded-lg hover:bg-gray-100 cursor-pointer"
               aria-label="Open menu"
             >
               <Menu size={24} />
@@ -77,23 +82,25 @@ export default function Header() {
 
             {/* Delivering to Selector */}
             <button
-              onClick={() => setPinOpen(true)}
-              className="flex items-center gap-2 text-left py-1 px-1.5 sm:px-2 rounded-lg hover:bg-gray-50 transition-colors group cursor-pointer"
+              onClick={openLocationModal}
+              className="flex items-center gap-2 text-left py-1.5 px-2 rounded-xl hover:bg-slate-100/80 transition-colors group cursor-pointer border border-transparent hover:border-slate-200"
               title="Change Delivery Location"
             >
-              <Navigation 
-                size={18} 
-                className="text-[#171725] shrink-0 -rotate-45 stroke-[2.2]" 
-              />
+              <div className="w-8 h-8 rounded-lg bg-[#FFF1EF] flex items-center justify-center text-[#FF6B5A] group-hover:scale-105 transition-transform shrink-0">
+                <MapPin 
+                  size={18} 
+                  className="stroke-[2.2]" 
+                />
+              </div>
               <div className="flex flex-col leading-tight">
-                <span className="text-[12px] font-bold text-[#171725] tracking-tight">
+                <span className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">
                   Delivering to
                 </span>
-                <div className="flex items-center gap-1 text-[11px] text-[#696974] font-medium">
-                  <span className="truncate max-w-[130px] sm:max-w-[180px]">
-                    {pin ? `Bengaluru, ${pin}` : "Bengaluru, 560102"}
+                <div className="flex items-center gap-1 text-[13px] text-[#171725] font-bold">
+                  <span className="truncate max-w-[140px] sm:max-w-[200px]">
+                    {displayLocationText}
                   </span>
-                  <ChevronDown size={13} className="text-[#696974] group-hover:translate-y-0.5 transition-transform" />
+                  <ChevronDown size={14} className="text-[#8E8E93] group-hover:text-[#171725] group-hover:translate-y-0.5 transition-all" />
                 </div>
               </div>
             </button>
@@ -110,7 +117,7 @@ export default function Header() {
                 if (!user) router.push("/login");
                 else router.push("/account");
               }}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-[#171725] hover:bg-gray-100 hover:text-black transition-colors"
+              className="w-10 h-10 rounded-full flex items-center justify-center text-[#171725] hover:bg-gray-100 hover:text-black transition-colors cursor-pointer"
               aria-label="Wallet & Offers"
               title="Wallet & Offers"
             >
@@ -120,7 +127,7 @@ export default function Header() {
             {/* Cart Icon with badge */}
             <button
               onClick={openDrawer}
-              className="relative w-10 h-10 rounded-full flex items-center justify-center text-[#171725] hover:bg-gray-100 hover:text-black transition-colors"
+              className="relative w-10 h-10 rounded-full flex items-center justify-center text-[#171725] hover:bg-gray-100 hover:text-black transition-colors cursor-pointer"
               aria-label="Shopping Cart"
               title="Cart"
             >
@@ -139,12 +146,12 @@ export default function Header() {
             {auth.admin ? (
               <div className="flex items-center gap-1.5">
                 <Link href="/admin" className="inline-flex items-center gap-1.5 rounded-full bg-[#F3EAFA] px-4 py-2 text-[13px] font-bold text-[#7B2CBF]"><LayoutDashboard size={15}/>Dashboard</Link>
-                <button onClick={() => signOut("admin")} className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-semibold text-[#696974] hover:bg-gray-100"><LogOut size={15}/>Logout</button>
+                <button onClick={() => signOut("admin")} className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-semibold text-[#696974] hover:bg-gray-100 cursor-pointer"><LogOut size={15}/>Logout</button>
               </div>
             ) : auth.customer || user ? (
               <div className="flex items-center gap-1">
                 <Link href="/account" className="px-3 py-2 text-sm font-semibold text-[#171725] hover:bg-gray-100 rounded-full transition-colors">{(auth.customer?.name || user?.name)?.split(" ")[0] || "Account"}</Link>
-                <button onClick={() => signOut("customer")} title="Logout" className="grid size-9 place-items-center rounded-full text-[#696974] hover:bg-gray-100"><LogOut size={16}/></button>
+                <button onClick={() => signOut("customer")} title="Logout" className="grid size-9 place-items-center rounded-full text-[#696974] hover:bg-gray-100 cursor-pointer"><LogOut size={16}/></button>
               </div>
             ) : auth.loaded ? (
               <Link
@@ -205,7 +212,6 @@ export default function Header() {
                         <div className="w-64 bg-white rounded-xl shadow-[0_10px_30px_-5px_rgba(0,0,0,0.15)] border border-[#EBEBEF] py-2 overflow-hidden ring-1 ring-black/5">
                           <ul className="flex flex-col divide-y divide-[#F6F6F9]">
                             {data.items.map((item) => {
-                              // Direct route for subcategories: /category/{catSlug}/{item.slug}
                               const href = `/category/${data.slug}/${item.slug}`;
                               return (
                                 <li key={item.name}>
@@ -220,8 +226,6 @@ export default function Header() {
                               );
                             })}
                           </ul>
-
-
                         </div>
                       </div>
                     )}
@@ -249,7 +253,7 @@ export default function Header() {
               <Logo width={32} height={32} />
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
+                className="p-1 rounded-full text-gray-500 hover:bg-gray-100 cursor-pointer"
                 aria-label="Close menu"
               >
                 <X size={22} />
@@ -260,14 +264,16 @@ export default function Header() {
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
-                setPinOpen(true);
+                openLocationModal();
               }}
-              className="flex items-center gap-3 px-4 py-3 bg-[#F9FAFB] border-b border-[#F0F2F5] text-left"
+              className="flex items-center gap-3 px-4 py-3 bg-[#F9FAFB] border-b border-[#F0F2F5] text-left cursor-pointer hover:bg-slate-100 transition-colors"
             >
-              <Navigation size={18} className="text-[#171725] -rotate-45" />
-              <div>
-                <p className="text-[11px] font-bold text-[#171725]">Delivering to</p>
-                <p className="text-[12px] text-[#696974]">{pin ? `Bengaluru, ${pin}` : "Bengaluru, 560102"}</p>
+              <div className="w-8 h-8 rounded-lg bg-[#FFF1EF] flex items-center justify-center text-[#FF6B5A] shrink-0">
+                <MapPin size={18} className="stroke-[2.2]" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-bold text-[#8E8E93] uppercase tracking-wider">Delivering to</p>
+                <p className="text-[13px] font-bold text-[#171725] truncate">{displayLocationText}</p>
               </div>
             </button>
 
@@ -282,7 +288,7 @@ export default function Header() {
                   <div key={tabTitle} className="border-b border-[#F5F5F7]">
                     <button
                       onClick={() => setMobileExpandedTab(isExpanded ? null : tabTitle)}
-                      className="w-full flex items-center justify-between px-4 py-3 text-[14px] font-semibold text-[#171725] hover:bg-gray-50"
+                      className="w-full flex items-center justify-between px-4 py-3 text-[14px] font-semibold text-[#171725] hover:bg-gray-50 cursor-pointer"
                     >
                       <span>{tabTitle}</span>
                       <ChevronDown
@@ -315,7 +321,7 @@ export default function Header() {
 
             {/* Bottom Actions */}
             <div className="p-4 border-t border-[#F0F2F5] space-y-2">
-              {auth.admin ? <><Link href="/admin" onClick={()=>setMobileMenuOpen(false)} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#7B2CBF] py-2.5 text-[14px] font-semibold text-white"><LayoutDashboard size={16}/>Admin Dashboard</Link><button onClick={()=>{setMobileMenuOpen(false);signOut("admin")}} className="flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-[14px] font-semibold"><LogOut size={16}/>Logout</button></> : auth.customer || user ? <><Link href="/account" onClick={()=>setMobileMenuOpen(false)} className="block w-full rounded-xl bg-[#171725] py-2.5 text-center text-[14px] font-semibold text-white">My Account</Link><button onClick={()=>{setMobileMenuOpen(false);signOut("customer")}} className="flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-[14px] font-semibold"><LogOut size={16}/>Logout</button></> : (
+              {auth.admin ? <><Link href="/admin" onClick={()=>setMobileMenuOpen(false)} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#7B2CBF] py-2.5 text-[14px] font-semibold text-white"><LayoutDashboard size={16}/>Admin Dashboard</Link><button onClick={()=>{setMobileMenuOpen(false);signOut("admin")}} className="flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-[14px] font-semibold cursor-pointer"><LogOut size={16}/>Logout</button></> : auth.customer || user ? <><Link href="/account" onClick={()=>setMobileMenuOpen(false)} className="block w-full rounded-xl bg-[#171725] py-2.5 text-center text-[14px] font-semibold text-white">My Account</Link><button onClick={()=>{setMobileMenuOpen(false);signOut("customer")}} className="flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-[14px] font-semibold cursor-pointer"><LogOut size={16}/>Logout</button></> : (
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
@@ -328,9 +334,6 @@ export default function Header() {
           </aside>
         </div>
       )}
-
-      {/* Pin Modal */}
-      {pinOpen && <PinModal onClose={() => setPinOpen(false)} />}
     </>
   );
 }
