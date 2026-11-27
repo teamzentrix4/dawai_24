@@ -15,6 +15,7 @@ import CustomerShell from "@/components/Account/CustomerShell";
 const CartDrawer = dynamic(() => import("@/components/Cart/CartDrawer"), { ssr: false });
 const Toasts = dynamic(() => import("@/components/Common/Toasts"), { ssr: false });
 const BackToTop = dynamic(() => import("@/components/Common/BackToTop"), { ssr: false });
+const LocationModal = dynamic(() => import("@/components/Header/LocationModal"), { ssr: false });
 
 export default function AppChrome({ children, categories = [] }) {
   const pathname = usePathname();
