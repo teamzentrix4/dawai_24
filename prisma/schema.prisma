@@ -79,6 +79,26 @@ model AuthSession {
   @@index([expiresAt])
 }
 
+model PasswordResetChallenge {
+  id             String    @id @default(cuid())
+  email          String
+  userId         String?
+  otpHash        String
+  tokenHash      String?
+  ipHash         String?
+  expiresAt      DateTime
+  resendAfter    DateTime
+  tokenExpiresAt DateTime?
+  attemptCount   Int       @default(0)
+  verifiedAt     DateTime?
+  usedAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@index([userId, createdAt])
+  @@index([ipHash, createdAt])
+}
+
 model CmsEntry {
   id        String   @id @default(cuid())
   type      String
