@@ -18,7 +18,6 @@ import Logo from "@/components/Common/Logo";
 import { useStore } from "@/lib/store";
 import { useLocation } from "@/lib/locationContext";
 
-const SearchBox = dynamic(() => import("@/components/Search/SearchBox"), { ssr: false });
 const LocationModal = dynamic(() => import("./LocationModal"), { ssr: false });
 
 export default function Header({ initialCategories = [] }) {
@@ -113,9 +112,6 @@ export default function Header({ initialCategories = [] }) {
             </button>
           </div>
 
-          {/* Spacer */}
-          <div className="flex-1" />
-
           {/* Right section: Wallet, Cart, Login */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Wallet / Offers Icon */}
@@ -172,11 +168,6 @@ export default function Header({ initialCategories = [] }) {
               </Link>
             ) : <div className="h-10 w-20 animate-pulse rounded-full bg-slate-100"/>}
           </div>
-        </div>
-
-        {/* Mobile Search Bar row */}
-        <div className="md:hidden px-4 pb-3">
-          <SearchBox />
         </div>
 
         {/* Navigation Tabs Bar with Dropdowns (Desktop) */}

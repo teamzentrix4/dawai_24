@@ -7,12 +7,12 @@ export const footerSections = [
     title: "Know Us",
     links: [
       { name: "About Us", url: "/about-us" },
-      { name: "Terms & Conditions", url: "/policies/terms-and-conditions" },
-      { name: "Privacy Policy", url: "/policies/privacy-policy" },
-      { name: "Return & Refund Policy", url: "/policies/return-policy" },
-      { name: "Online Medicine Delivery", url: "/medicines" },
-      { name: "Contact Us", url: "/contact" },
-      { name: "FAQs & Help Center", url: "/help" },
+      { name: "Terms & Conditions", url: "/terms-and-conditions" },
+      { name: "Privacy Policy", url: "/privacy-policy" },
+      { name: "Return & Refund Policy", url: "/return-refund-policy" },
+      { name: "Online Medicine Delivery", url: "/online-medicine-delivery" },
+      { name: "Contact Us", url: "/contact-us" },
+      { name: "FAQs & Help Center", url: "/faqs-help-center" },
     ],
   },
   {
@@ -99,14 +99,14 @@ export default function Footer() {
       {/* Main Footer Links */}
       <div className="container-x py-14">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10">
-          
+
           {/* Company Bio */}
           <div className="lg:col-span-2 space-y-4 pr-0 lg:pr-6">
             <Logo width={42} height={42} />
-            <p className="text-[13px] text-[#696974] leading-relaxed">
+            {/* <p className="text-[13px] text-[#696974] leading-relaxed">
               Davai24 is India&apos;s leading platform for affordable, quality-assured substitute & branded medicines. 
               We help families save up to 70% on monthly prescription bills with 100% same salt composition.
-            </p>
+            </p> */}
             <div className="pt-2 text-[12px] text-[#92929D] space-y-1">
               <p><strong className="text-[#171725]">Address:</strong>A-11, Amity Rd, A Block, C Block, Sector 125, Noida, Uttar Pradesh 201313</p>
               <p><strong className="text-[#171725]">Support:</strong>8958622622</p>
@@ -120,8 +120,8 @@ export default function Footer() {
               <ul className="space-y-2 text-[13px]">
                 {sec.links.map((link) => (
                   <li key={link.name}>
-                    <Link 
-                      href={link.url} 
+                    <Link
+                      href={link.url}
                       className="text-[#696974] hover:text-[#FF6B5A] transition-colors"
                     >
                       {link.name}

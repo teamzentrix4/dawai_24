@@ -11,8 +11,8 @@ import { db } from "@/lib/db";
 import { publicCategoryFilter } from "@/lib/productWizard";
 
 export const metadata = {
-  title: "Buy Generic Medicines Online & Save Up to 60% on PlatinumRx",
-  description: "PlatinumRx is India's trusted online pharmacy for branded substitute medicines. Save up to 60% on chronic prescription drugs with identical salt compositions.",
+  title: "Buy Generic & Substitute Medicines Online & Save Up to 70% | Dawai24",
+  description: "Dawai24 is India's trusted online pharmacy for branded substitute medicines. Save up to 70% on chronic prescription drugs with identical salt compositions.",
 };
 
 export const dynamic = "force-dynamic";
@@ -40,7 +40,7 @@ export default async function HomePage() {
       {/* 5. Shop by Category (category cards link to subcategory pages) */}
       <HomeShopByCategory categories={categories} />
 
-      {/* 6. The PlatinumRx Advantage (100% Genuine, FDA & GMP Approved, GMP Certified) */}
+      {/* 6. The Dawai24 Advantage (100% Genuine, FDA & GMP Approved, GMP Certified) */}
       <HomeAdvantage advantages={content("ADVANTAGE")} />
 
       {/* 7. Trusted by 10L+ Customers (Customer reviews slider) */}
@@ -49,7 +49,7 @@ export default async function HomePage() {
       {/* 8. We Are In The News (Interactive coverage + press logos) */}
       <HomeNews articles={content("NEWS")} />
 
-      {/* 9. Know More About PlatinumRx (SEO description + FAQs) */}
+      {/* 9. Know More About Dawai24 (SEO description + FAQs) */}
       <HomeKnowMore sections={content("KNOW_MORE")} faqs={content("FAQ")} />
     </div>
   );

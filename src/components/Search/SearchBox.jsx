@@ -1,65 +1,166 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { Search, X } from "lucide-react";
+import { useMedicineSearch } from "@/lib/useMedicineSearch";
+import MedicineSearchDropdown from "./MedicineSearchDropdown";
 
-export default function SearchBox({ className = "" }) {
+export default function SearchBox({
+  className = "",
+  inputClassName = "",
+  placeholder = "Search medicines, salts, brands...",
+  autoFocus = false,
+  onSelect
+}) {
   const router = useRouter();
-  const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
-  const [categories,setCategories] = useState([]);
-  const { catalog } = useStore();
-  const ref = useRef(null);
+  const {
+    query,
+    setQuery,
+    suggestions,
+    isOpen,
+    setIsOpen,
+    clear
+  } = useMedicineSearch();
 
+  const containerRef = useRef(null);
+  const inputRef = useRef(null);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  // Reset keyboard selection whenever suggestions or query changes
   useEffect(() => {
-    fetch("/api/catalog/categories", { cache: "force-cache" }).then(r=>r.json()).then(setCategories).catch(()=>setCategories([]));
-    const off = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", off);
-    return () => document.removeEventListener("mousedown", off);
-  }, []);
+    setSelectedIndex(-1);
+  }, [query, suggestions]);
 
-  const prods = useMemo(() => catalog.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())||p.brand.toLowerCase().includes(q.toLowerCase())).slice(0,5), [q,catalog]);
-  const cats = useMemo(() => categories.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())).slice(0,3), [q,categories]);
+  // Close on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [setIsOpen]);
 
-  const submit = (e) => {
+  const executeSelection = (item) => {
+    setIsOpen(false);
+    if (!item) {
+      if (query.trim()) {
+        router.push(`/medicines?q=${encodeURIComponent(query.trim())}`);
+      }
+      return;
+    }
+
+    setQuery(item.name);
+    if (onSelect) {
+      onSelect(item);
+    } else {
+      router.push(`/products/${item.slug}`);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      setIsOpen(false);
+      setSelectedIndex(-1);
+      return;
+    }
+
+    if (!isOpen || suggestions.length === 0) {
+      if (e.key === "Enter" && query.trim()) {
+        e.preventDefault();
+        setIsOpen(false);
+        router.push(`/medicines?q=${encodeURIComponent(query.trim())}`);
+      }
+      return;
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev + 1 < suggestions.length ? prev + 1 : 0));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev - 1 >= 0 ? prev - 1 : suggestions.length - 1));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+        executeSelection(suggestions[selectedIndex]);
+      } else if (query.trim()) {
+        setIsOpen(false);
+        router.push(`/medicines?q=${encodeURIComponent(query.trim())}`);
+      }
+    }
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!q.trim()) return;
-    setOpen(false);
-    router.push(`/search?q=${encodeURIComponent(q.trim())}`);
+    if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+      executeSelection(suggestions[selectedIndex]);
+      return;
+    }
+    if (!query.trim()) return;
+    setIsOpen(false);
+    router.push(`/medicines?q=${encodeURIComponent(query.trim())}`);
   };
 
   return (
-    <div ref={ref} className={`relative ${className}`}>
-      <form onSubmit={submit} role="search" className="flex">
+    <div ref={containerRef} className={`relative w-full ${className}`}>
+      <form onSubmit={handleSubmit} role="search" className="flex items-center relative w-full">
         <input
-          className="input !rounded-r-none !border-r-0"
-          placeholder="Search medicines, brands, categories"
-          value={q}
-          onChange={(e) => { setQ(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)}
-          aria-label="Search"
+          ref={inputRef}
+          type="search"
+          autoFocus={autoFocus}
+          className={
+            inputClassName ||
+            "w-full bg-[#FAFBFD] border border-[#CBD5E1] rounded-full h-11 pl-11 pr-10 text-xs sm:text-sm text-[#171725] placeholder:text-[#94A3B8] outline-none focus:border-[#2E7D32] focus:bg-white focus:ring-2 focus:ring-[#2E7D32]/10 transition-all shadow-3xs"
+          }
+          placeholder={placeholder}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => {
+            if (query.trim().length >= 1) setIsOpen(true);
+          }}
+          onKeyDown={handleKeyDown}
+          aria-label="Search medicines"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck="false"
         />
-        <button className="btn btn-primary !rounded-l-none" aria-label="Submit search"><Search size={18} /></button>
-      </form>
-      {open && q.trim() && (
-        <div className="absolute z-50 mt-1 w-full card shadow-xl overflow-hidden anim-fade">
-          {cats.map((c) => (
-            <button key={c.slug} className="w-full text-left px-4 py-2 hover:bg-brand-50 text-sm" onClick={() => { setOpen(false); router.push(`/category/${c.slug}`); }}>
-              <span className="text-brand-700 font-semibold">{c.name}</span> <span className="text-slate-400">in categories</span>
-            </button>
-          ))}
-          {prods.map((p) => (
-            <button key={p.id} className="w-full text-left px-4 py-2 hover:bg-brand-50 text-sm" onClick={() => { setOpen(false); router.push(`/products/${p.slug}`); }}>
-              {p.name} <span className="text-slate-400">· {p.brand}</span>
-            </button>
-          ))}
-          {!prods.length && !cats.length && <p className="px-4 py-3 text-sm text-slate-500">No suggestions for “{q}”.</p>}
-          <button className="w-full text-left px-4 py-2 text-sm font-semibold text-brand-700 border-t hover:bg-brand-50" onClick={submit}>
-            See all results for “{q}”
-          </button>
+        
+        {/* Left Search Icon */}
+        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none">
+          <Search size={18} />
         </div>
-      )}
+
+        {/* Clear Button */}
+        {query && (
+          <button
+            type="button"
+            onClick={() => {
+              clear();
+              inputRef.current?.focus();
+            }}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#171725] p-1 rounded-full cursor-pointer transition-colors"
+            aria-label="Clear search"
+          >
+            <X size={15} />
+          </button>
+        )}
+      </form>
+
+      {/* Clean Minimal Suggestions Dropdown */}
+      <MedicineSearchDropdown
+        query={query}
+        suggestions={suggestions}
+        isOpen={isOpen}
+        selectedIndex={selectedIndex}
+        onClose={() => setIsOpen(false)}
+        onSelectResult={(item) => executeSelection(item)}
+      />
     </div>
   );
 }

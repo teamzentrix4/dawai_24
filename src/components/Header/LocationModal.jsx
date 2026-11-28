@@ -270,7 +270,7 @@ export default function LocationModal() {
           </div>
 
           {/* Search Autocomplete Suggestions */}
-          {searchQuery.trim() !== "" ? (
+          {searchQuery.trim() !== "" && (
             <div className="space-y-1 max-h-56 overflow-y-auto rounded-xl border border-slate-100 p-1.5 bg-slate-50/50">
               {results.length > 0 ? (
                 results.map((item, idx) => (
@@ -308,58 +308,6 @@ export default function LocationModal() {
                   </p>
                 </div>
               ) : null}
-            </div>
-          ) : (
-            /* Popular / Suggested Locations */
-            <div>
-              <div className="flex items-center justify-between mb-2.5 px-0.5">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles size={13} className="text-[#FF6B5A]" /> Popular Cities & Hubs
-                </span>
-                {location?.city && (
-                  <span className="text-[11px] text-slate-400">
-                    Currently: <strong className="text-slate-700">{location.area || location.city}</strong>
-                  </span>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {popularLocations.map((item) => {
-                  const isCurrent =
-                    location?.city?.toLowerCase() === item.city.toLowerCase() &&
-                    (location?.pincode ? location.pincode === item.pincode : true);
-
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => handleSelectLocation(item)}
-                      className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                        isCurrent
-                          ? "border-[#FF6B5A] bg-[#FFF8F7] text-slate-900 shadow-xs"
-                          : "border-slate-200/80 bg-white hover:border-slate-300 hover:bg-slate-50/80"
-                      }`}
-                    >
-                      <Building2
-                        size={16}
-                        className={`shrink-0 ${
-                          isCurrent ? "text-[#FF6B5A]" : "text-slate-400"
-                        }`}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-slate-800 truncate">
-                          {item.area}
-                        </p>
-                        <p className="text-[11px] text-slate-500 truncate">
-                          {item.city} {item.pincode ? `• ${item.pincode}` : ""}
-                        </p>
-                      </div>
-                      {isCurrent && (
-                        <Check size={14} className="text-[#FF6B5A] shrink-0" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
             </div>
           )}
 

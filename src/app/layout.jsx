@@ -1,5 +1,5 @@
 import "./globals.css";
-import WhatsAppFloat from "@/components/WhatsAppFloat/page";
+import WhatsAppFloat from "@/components/Common/WhatsAppFloat";
 import AppChrome from "@/components/Common/AppChrome";
 import { getPublicCategories } from "@/lib/publicCategories";
 
@@ -8,5 +8,14 @@ export const viewport={width:"device-width",initialScale:1};
 
 export default async function RootLayout({children}){
   const categories = await getPublicCategories();
-  return <html lang="en"><body className="font-sans antialiased"><AppChrome categories={categories}>{children}</AppChrome></body></html>;
+  return (
+    <html lang="en">
+      <body className="font-sans antialiased">
+        <AppChrome categories={categories}>
+          {children}
+        </AppChrome>
+        <WhatsAppFloat />
+      </body>
+    </html>
+  );
 }

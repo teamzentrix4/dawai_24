@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Boxes, Grid2X2, HeartPulse, Package, Sparkles, Stethoscope } from "lucide-react";
 import Breadcrumbs from "@/components/Common/Breadcrumbs";
+import CategorySearchBar from "@/components/Common/CategorySearchBar";
 import { db } from "@/lib/db";
 import { isPendingCategory, publicCategoryFilter } from "@/lib/productWizard";
 
@@ -19,7 +20,10 @@ export default async function CategoryPage({ params }) {
   if (!category || !category.active || isPendingCategory(category)) notFound();
 
   return (
-    <main className="container-x pb-16 pt-5 md:pt-8">
+    <main className="container-x pb-16 pt-5 md:pt-8 space-y-4">
+      {/* Search Bar for this category */}
+      <CategorySearchBar />
+
       <Link href="/categories" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#233A5E] hover:text-[#FF6B5A]">
         <ArrowLeft size={16} aria-hidden="true" /> Back to all categories
       </Link>

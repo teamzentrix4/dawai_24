@@ -137,9 +137,9 @@ export default function Contact() {
                     <MapPin size={16} />
                   </div>
                   <div>
-                    <p className="font-bold text-[#171725]">Office Address</p>
+                    <p className="font-bold text-[#171725]">Registered Office</p>
                     <p className="text-[#696974] mt-0.5 leading-snug">
-                      Building H-208, Hustle Hub Tech Park, 27th Main Road, Sector 2 HSR Layout, Bengaluru 560102
+                      A-11, Amity Rd, A Block, C Block, Sector 125, Noida, Uttar Pradesh 201313
                     </p>
                   </div>
                 </div>
