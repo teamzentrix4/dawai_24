@@ -12,7 +12,7 @@ const navigation = [
   ["My Orders", "Check your order details", "/orders", Package],
   ["Wishlist", "Your saved medicines", "/wishlist", Heart],
   ["My Addresses", "Add & edit your address", "/account/addresses", MapPin],
-  ["Wallet", "Cashback, coins, and refunds", "/account#wallet", Wallet],
+  ["Wallet", "Cashback, coins, and refunds", "/account/wallet", Wallet],
 ];
 
 export default function CustomerShell({ children }) {
