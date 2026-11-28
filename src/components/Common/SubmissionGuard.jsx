@@ -21,32 +21,14 @@ export default function SubmissionGuard() {
   useEffect(() => {
     const guard = (event) => {
       const button = event.submitter;
-      if (!(button instanceof HTMLButtonElement) || button.dataset.submitting === "true") return;
+      if (!(button instanceof HTMLButtonElement)) return;
       const form = event.target instanceof HTMLFormElement ? event.target : null;
-
-      button.dataset.submitting = "true";
-      button.dataset.originalLabel = button.innerHTML;
-      button.disabled = true;
-      button.setAttribute("aria-busy", "true");
-      button.classList.add("cursor-wait", "opacity-70");
-      button.textContent = pendingLabel(button);
-      form?.querySelectorAll('button[type="submit"], button:not([type])').forEach((control) => {
-        if (control !== button) control.disabled = true;
-      });
-
-      // A navigation normally follows a successful submission. Restore the
-      // control when a validation/server error keeps the user on this page.
+      if (!form || form.dataset.submitting === "true") { event.preventDefault(); return; }
+      // Do not mutate button children here. React owns this DOM and changing
+      // textContent/innerHTML during a render can cause removeChild crashes.
+      form.dataset.submitting = "true";
       window.setTimeout(() => {
-        if (button.dataset.submitting !== "true") return;
-        button.disabled = false;
-        button.removeAttribute("aria-busy");
-        button.classList.remove("cursor-wait", "opacity-70");
-        button.innerHTML = button.dataset.originalLabel || "Try again";
-        delete button.dataset.submitting;
-        delete button.dataset.originalLabel;
-        form?.querySelectorAll('button[type="submit"], button:not([type])').forEach((control) => {
-          if (control !== button) control.disabled = false;
-        });
+        delete form.dataset.submitting;
       }, 15000);
     };
 
