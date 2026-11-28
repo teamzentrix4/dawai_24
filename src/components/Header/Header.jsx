@@ -121,12 +121,15 @@ export default function Header({ initialCategories = [] }) {
             {/* Wallet / Offers Icon */}
             <button
               onClick={() => {
-                if (!user) router.push("/login");
-                else router.push("/account");
+                if (!auth.customer && !user) {
+                  router.push("/login?next=/account/wallet");
+                  return;
+                }
+                router.push("/account/wallet");
               }}
               className="w-10 h-10 rounded-full flex items-center justify-center text-[#171725] hover:bg-gray-100 hover:text-black transition-colors cursor-pointer"
-              aria-label="Wallet & Offers"
-              title="Wallet & Offers"
+              aria-label="Open wallet"
+              title="Open wallet"
             >
               <Wallet size={20} strokeWidth={1.8} />
             </button>
