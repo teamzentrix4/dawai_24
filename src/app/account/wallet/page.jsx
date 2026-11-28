@@ -8,7 +8,17 @@ export const dynamic = "force-dynamic";
 export default async function WalletPage() {
   const auth = await getCustomerSession();
   if (!auth) redirect("/login?next=/account/wallet");
-  const transactions = await db.walletTransaction.findMany({ where: { customerId: auth.user.id }, orderBy: { createdAt: "desc" } });
+  // Do not break the whole customer account if a deployment is briefly using
+  // an older Prisma client while Vercel refreshes its build cache.
+  let transactions = [];
+  try {
+    transactions = await db.walletTransaction.findMany({
+      where: { customerId: auth.user.id },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    console.error("Unable to load customer wallet", error);
+  }
   const balance = transactions.reduce((total, item) => total + Number(item.amount), 0);
   const cashback = transactions.filter((item) => Number(item.amount) > 0).reduce((total, item) => total + Number(item.amount), 0);
   return <section className="max-w-3xl"><p className="text-xs font-bold uppercase tracking-[.15em] text-[#FF6B5A]">Dawai24 Wallet</p><h1 className="mt-2 text-3xl font-black tracking-tight">Cashback & refunds</h1><p className="mt-2 text-sm text-slate-500">Your available wallet balance and all cashback credits.</p><div className="mt-7 grid gap-4 sm:grid-cols-2"><div className="rounded-2xl bg-gradient-to-br from-[#FF6B5A] to-[#F35B4B] p-6 text-white shadow-lg shadow-[#FF6B5A]/20"><span className="grid size-11 place-items-center rounded-xl bg-white/15"><WalletCards size={23}/></span><p className="mt-5 text-sm font-semibold text-white/75">Available balance</p><p className="mt-1 text-3xl font-black">₹{balance.toFixed(2)}</p></div><div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-6"><span className="grid size-11 place-items-center rounded-xl bg-white text-emerald-600"><IndianRupee size={23}/></span><p className="mt-5 text-sm font-semibold text-emerald-700">Total cashback received</p><p className="mt-1 text-3xl font-black text-emerald-800">₹{cashback.toFixed(2)}</p></div></div><div className="mt-8"><h2 className="text-lg font-extrabold">Wallet activity</h2><div className="mt-4 overflow-hidden rounded-2xl border border-slate-200">{transactions.length ? <div className="divide-y divide-slate-100">{transactions.map((item) => { const credit = Number(item.amount) >= 0; return <div key={item.id} className="flex items-center gap-4 p-4"><span className={`grid size-10 place-items-center rounded-xl ${credit ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"}`}>{credit ? <ArrowDownLeft size={19}/> : <ArrowUpRight size={19}/>}</span><div className="min-w-0 flex-1"><b className="block text-sm">{item.description}</b><p className="mt-1 text-xs text-slate-500">{item.createdAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}{item.reference ? ` · ${item.reference}` : ""}</p></div><b className={credit ? "text-emerald-700" : "text-red-600"}>{credit ? "+" : ""}₹{Math.abs(Number(item.amount)).toFixed(2)}</b></div>; })}</div> : <div className="p-10 text-center"><WalletCards className="mx-auto text-slate-300" size={34}/><h3 className="mt-3 font-bold">No wallet activity yet</h3><p className="mt-1 text-sm text-slate-500">Cashback and refund credits will appear here automatically.</p></div>}</div></div></section>;
